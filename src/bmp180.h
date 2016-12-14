@@ -1,154 +1,99 @@
-
+/*
+ * bmp180.h
+ *
+ * Author: Ladislav Tar
+ *
+ */
+#include "stm32l1xx.h"
+#include "stm32l1xx_i2c.h"
+ #include "stm32l1xx_rcc.h"
+#include<stdlib.h>
+#include <stdio.h>
 
 #ifndef BMP180_H_
 #define BMP180_H_
-#include <stddef.h>
-#include "stm32l1xx.h"
-#include <stm32l1xx_gpio.h>
-#include <stm32l1xx_rcc.h>
-#include <stm32l1xx_i2c.h>
 
+/* I2C to use for communications with BMP180 */
+#define _I2C_PORT 1
 
-
-#define I2C1_SCL_PIN                    GPIO_Pin_8	//PB
-#define I2C1_SCL_PINSOURCE				GPIO_PinSource8
-
-#define I2C1_SDA_PIN					GPIO_Pin_9	//PB
-#define I2C1_SDA_PINSOURCE				GPIO_PinSource9
-
-#define I2C1_CONTROL_PINS_PORT_CLK      RCC_AHBPeriph_GPIOB
-#define I2C1_CONTROL_PINS_PORT			GPIOB
-
-#define I2C_TIMEOUT 100
-
-/* I2C SPE mask */
-#define CR1_PE_Set              ((uint16_t)0x0001)
-#define CR1_PE_Reset            ((uint16_t)0xFFFE)
-
-/* I2C START mask */
-#define CR1_START_Set           ((uint16_t)0x0100)
-#define CR1_START_Reset         ((uint16_t)0xFEFF)
-
-#define CR1_POS_Set           ((uint16_t)0x0800)
-#define CR1_POS_Reset         ((uint16_t)0xF7FF)
-
-/* I2C STOP mask */
-#define CR1_STOP_Set            ((uint16_t)0x0200)
-#define CR1_STOP_Reset          ((uint16_t)0xFDFF)
-
-/* I2C ACK mask */
-#define CR1_ACK_Set             ((uint16_t)0x0400)
-#define CR1_ACK_Reset           ((uint16_t)0xFBFF)
-
-/* I2C ENARP mask */
-#define CR1_ENARP_Set           ((uint16_t)0x0010)
-#define CR1_ENARP_Reset         ((uint16_t)0xFFEF)
-
-/* I2C NOSTRETCH mask */
-#define CR1_NOSTRETCH_Set       ((uint16_t)0x0080)
-#define CR1_NOSTRETCH_Reset     ((uint16_t)0xFF7F)
-
-/* I2C registers Masks */
-#define CR1_CLEAR_Mask          ((uint16_t)0xFBF5)
-
-/* I2C DMAEN mask */
-#define CR2_DMAEN_Set           ((uint16_t)0x0800)
-#define CR2_DMAEN_Reset         ((uint16_t)0xF7FF)
-
-/* I2C LAST mask */
-#define CR2_LAST_Set            ((uint16_t)0x1000)
-#define CR2_LAST_Reset          ((uint16_t)0xEFFF)
-
-/* I2C FREQ mask */
-#define CR2_FREQ_Reset          ((uint16_t)0xFFC0)
-
-/* I2C ADD0 mask */
-#define OAR1_ADD0_Set           ((uint16_t)0x0001)
-#define OAR1_ADD0_Reset         ((uint16_t)0xFFFE)
-
-/* I2C ENDUAL mask */
-#define OAR2_ENDUAL_Set         ((uint16_t)0x0001)
-#define OAR2_ENDUAL_Reset       ((uint16_t)0xFFFE)
-
-/* I2C ADD2 mask */
-#define OAR2_ADD2_Reset         ((uint16_t)0xFF01)
-
-/* I2C F/S mask */
-#define CCR_FS_Set              ((uint16_t)0x8000)
-
-/* I2C CCR mask */
-#define CCR_CCR_Set             ((uint16_t)0x0FFF)
-
-/* I2C FLAG mask */
-#define FLAG_Mask               ((uint32_t)0x00FFFFFF)
-
-/* I2C Interrupt Enable mask */
-#define ITEN_Mask               ((uint32_t)0x07000000)
-
-
-#define I2C_IT_BUF                      ((uint16_t)0x0400)
-#define I2C_IT_EVT                      ((uint16_t)0x0200)
-#define I2C_IT_ERR                      ((uint16_t)0x0100)
-
-
-#define  ClockSpeed            400000
-
-#define I2C_DIRECTION_TX 0
-#define I2C_DIRECTION_RX 1
-
-#define OwnAddress1 0x28
-#define OwnAddress2 0x30
-
-
-#define I2C1_DMA_CHANNEL_TX           DMA1_Channel6
-#define I2C1_DMA_CHANNEL_RX           DMA1_Channel7
-
-#define I2C2_DMA_CHANNEL_TX           DMA1_Channel4
-#define I2C2_DMA_CHANNEL_RX           DMA1_Channel5
-
-#define I2C1_DR_Address              0x40005410
-#define I2C2_DR_Address              0x40005810
-
-
-#define AD0
-
-//ADDRESS IF AD0
-#ifdef AD0
-	#define ADS1100_ADDRESS_W 0xEE
-	#define ADS1100_ADDRESS_R 0xEF
+#if _I2C_PORT == 1
+	#define I2C_PORT         I2C1
+	#define I2C_SCL_PIN      GPIO_Pin_8     // PB8
+	#define I2C_SDA_PIN      GPIO_Pin_9     // PB9
+	#define I2C_GPIO_PORT    GPIOB
+	#define I2C_CLOCK        RCC_APB1Periph_I2C1
+#elif _I2C_PORT == 2
+	#define I2C_PORT         I2C2
+	#define I2C_SCL_PIN      GPIO_Pin_10    // PB10
+	#define I2C_SDA_PIN      GPIO_Pin_11    // PB11
+	#define I2C_GPIO_PORT    GPIOB
+	#define I2C_CLOCK        RCC_APB1Periph_I2C2
+#elif _I2C_PORT == 3
+	#define I2C_PORT         I2C3
+	#define I2C_SCL_PIN      GPIO_Pin_8    // PA8
+	#define I2C_SDA_PIN      GPIO_Pin_9    // PC9
+	//#define I2C_GPIO_PORT    GPIOB
+	#define I2C_CLOCK        RCC_APB1Periph_I2C3
 #endif
 
-//ADDRESS IF AD1
-#ifdef AD1
-	#define ADS1100_ADDRESS_W 0x92
-	#define ADS1100_ADDRESS_R 0x93
-#endif
+/* BMP180 defines */
+#define BMP180_ADDR                     0xEE // BMP180 address
+/* BMP180 registers */
+#define BMP180_PROM_START_ADDR          0xAA // E2PROM calibration data start register
+#define BMP180_PROM_DATA_LEN            22   // E2PROM length
+#define BMP180_CHIP_ID_REG              0xD0 // Chip ID
+#define BMP180_VERSION_REG              0xD1 // Version
+#define BMP180_CTRL_MEAS_REG            0xF4 // Measurements control (OSS[7.6], SCO[5], CTL[4.0]
+#define BMP180_ADC_OUT_MSB_REG          0xF6 // ADC out MSB  [7:0]
+#define BMP180_ADC_OUT_LSB_REG          0xF7 // ADC out LSB  [7:0]
+#define BMP180_ADC_OUT_XLSB_REG         0xF8 // ADC out XLSB [7:3]
+#define BMP180_SOFT_RESET_REG           0xE0 // Soft reset control
+/* BMP180 control values */
+#define BMP180_T_MEASURE                0x2E // temperature measurement
+#define BMP180_P0_MEASURE               0x34 // pressure measurement (OSS=0, 4.5ms)
+#define BMP180_P1_MEASURE               0x74 // pressure measurement (OSS=1, 7.5ms)
+#define BMP180_P2_MEASURE               0xB4 // pressure measurement (OSS=2, 13.5ms)
+#define BMP180_P3_MEASURE               0xF4 // pressure measurement (OSS=3, 25.5ms)
+/* BMP180 Pressure calculation constants */
+#define BMP180_PARAM_MG                 3038
+#define BMP180_PARAM_MH                -7357
+#define BMP180_PARAM_MI                 3791
 
-typedef enum
-{
-    GeneralError = 0,
-    StartConditionError,
-    AddressAckError,
-    BussyTimeoutError,
-    RestartConditionError,
-    Success
-}Status;
 
-void i2cINIT(void);
-Status writeByteI2C1(unsigned char deviceAddress, unsigned char registerAddress, unsigned char data);
-Status writeWordI2C1(unsigned char deviceAddress, unsigned char registerAddress, unsigned short data);
-Status writeArrayI2C1(unsigned char deviceAddress, unsigned char registerAddress, unsigned char *data, unsigned short length);
-Status readByteI2C1(unsigned char deviceAddress, unsigned char registerAddress, unsigned char *data);
-Status readWordI2C1(unsigned char deviceAddress, unsigned char registerAddress, unsigned short *data);
-Status readDWordI2C1(unsigned char deviceAddress, unsigned char registerAddress, unsigned long *data);
-char readArrayI2C1(unsigned char slaveAddress, unsigned char* dataBuffer, unsigned char registerAddress, unsigned short bytesToRead);
-char readArrayWithoutRegisterAddressI2C1(unsigned char slaveAddress, unsigned char* dataBuffer, unsigned short bytesToRead);
+/* Calibration parameters structure */
+typedef struct {
+	int16_t AC1;
+	int16_t AC2;
+	int16_t AC3;
+	uint16_t AC4;
+	uint16_t AC5;
+	uint16_t AC6;
+	int16_t B1;
+	int16_t B2;
+	int16_t MB;
+	int16_t MC;
+	int16_t MD;
+	int32_t B5;
+} BMP180_Calibration_TypeDef;
 
-Status I2C_Master_BufferRead(unsigned char* pBuffer,  unsigned long NumByteToRead, unsigned char SlaveAddress, unsigned char registerAddress);
-Status I2C_Master_BufferReadWithoutRegisterAddress(unsigned char* pBuffer,  unsigned long NumByteToRead, unsigned char SlaveAddress);
-Status I2C_Master_BufferWrite(unsigned char* pBuffer,  unsigned long NumByteToWrite, unsigned char SlaveAddress, unsigned char registerAddress);
-Status I2C_Master_BufferWriteWithoutRegisterAddress(unsigned char* pBuffer,  unsigned long NumByteToWrite, unsigned char SlaveAddress);
-Status readDataADS1100(unsigned int*data);
-Status initADS1100(void);
+
+/* Calibration parameters from E2PROM of BMP180 */
+BMP180_Calibration_TypeDef BMP180_Calibration;
+
+
+uint8_t BMP180_Init(uint32_t SPI_Clock_Speed);
+void BMP180_Reset();
+
+uint8_t BMP180_WriteReg(uint8_t reg, uint8_t value);
+uint8_t BMP180_ReadReg(uint8_t reg);
+
+void BMP180_ReadCalibration(void);
+
+uint16_t BMP180_Read_UT(void);
+uint32_t BMP180_Read_PT(uint8_t oss);
+int16_t BMP180_Calc_RT(uint16_t UT);
+int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss);
+
+int32_t BMP180_kpa_to_mmhg(int32_t Pa);
 
 #endif /* BMP180_H_ */

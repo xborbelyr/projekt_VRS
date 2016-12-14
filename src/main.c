@@ -1,19 +1,21 @@
-
-#include <delay.h>
-#include <uart.h>
 #include <bmp180.h>
+
+
 
 int main(void)
 {
-	i2cINIT();
-	initADS1100();
-	unsigned int data;
+  	BMP180_Init(400000);
+	BMP180_ReadCalibration();
+
+
+	uint32_t u_pres;
+	int32_t rp;
 
 
     while(1)
     {
-    	readDataADS1100(&data);
-
+		u_pres = BMP180_Read_PT(0);
+		rp = BMP180_Calc_RP(u_pres,0); // press
     }
 
 	return 0;
