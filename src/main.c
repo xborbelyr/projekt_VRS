@@ -13,30 +13,36 @@ int main(void)
 {
 	uint32_t u_pres;
 	int32_t rp;
+	char s_pres[20];
+
+	BMP180_Init(400000);
+	BMP180_ReadCalibration();
 
 	initSPI2();
 	initCD_Pin();
 	initCS_Pin();
 	initRES_Pin();
-  	//BMP180_Init(400000);
-	//BMP180_ReadCalibration();
+
 
 	lcdInitialise(LCD_ORIENTATION0);
 
 	lcdClearDisplay(decodeRgbValue(0, 0, 0));
 
 	lcdPutS("PRESSURE 1", lcdTextX(2), lcdTextY(2), decodeRgbValue(0, 0, 0), decodeRgbValue(255,255,255));
-	lcdPutS("90 000 Pa", lcdTextX(5), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+
 	lcdPutS("PRESSURE 2", lcdTextX(2), lcdTextY(6), decodeRgbValue(0, 0, 0), decodeRgbValue(255, 255, 255));
 	lcdPutS("88 888 Pa", lcdTextX(5), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 	lcdPutS("HEIGHT", lcdTextX(2), lcdTextY(10), decodeRgbValue(0, 0, 0), decodeRgbValue(255, 255, 255));
 	lcdPutS("20 cm", lcdTextX(5), lcdTextY(12), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
-
     while(1)
     {
-		//u_pres = BMP180_Read_PT(0);
-		//rp = BMP180_Calc_RP(u_pres,0); // press
+		u_pres = BMP180_Read_PT(0);
+		rp = BMP180_Calc_RP(u_pres,0); // press
+		itoa(rp,s_pres,10);
+		strcat(s_pres," Pa");
+		lcdPutS(s_pres,lcdTextX(5), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+		delay_us(200000);
     }
 
 	return 0;
