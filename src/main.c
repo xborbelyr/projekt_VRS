@@ -5,25 +5,25 @@
 #include "mcu/spi.h"
 #include "ssd1306.h"
 #include "ili9163.h"
+#include "button.h"
 
 #include <time.h>
 #include <stdlib.h>
 
 int main(void)
 {
-	uint32_t u_pres1,u_pres2;
-	int32_t rp;
-	char s_pres1[20],s_pres2[20];
+	char s_pres1[PRINT_SIZE],s_pres2[PRINT_SIZE],s_alt[PRINT_SIZE];
+
+	init_button();
 
 	BMP180_Init(400000);
-	BMP180_ReadCalibration(I2C_PORT1);
-	BMP180_ReadCalibration(I2C_PORT2);
+	BMP180_ReadCalibration(I2C_PORT1,&BMP180_Calibration1);
+	BMP180_ReadCalibration(I2C_PORT2,&BMP180_Calibration2);
 
 	initSPI2();
 	initCD_Pin();
 	initCS_Pin();
 	initRES_Pin();
-
 
 	lcdInitialise(LCD_ORIENTATION0);
 
@@ -34,24 +34,28 @@ int main(void)
 	lcdPutS("PRESSURE 2", lcdTextX(2), lcdTextY(6), decodeRgbValue(0, 0, 0), decodeRgbValue(255, 255, 255));
 
 	lcdPutS("HEIGHT", lcdTextX(2), lcdTextY(10), decodeRgbValue(0, 0, 0), decodeRgbValue(255, 255, 255));
-	lcdPutS("20 cm", lcdTextX(5), lcdTextY(12), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+
+
+	delta = 0;
 
     while(1)
     {
-    	int oos=3;
+    	int oss=3;
 
-		u_pres1 = BMP180_Read_PT(oos,I2C_PORT1);
-		rp = BMP180_Calc_RP(u_pres1,oos); // press
-		itoa(rp,s_pres1,10);
-		strcat(s_pres1," Pa");
+    	readAveragePressure(oss);
+
+    	altitude = calculateAltitude(pressure1, pressure2+delta, (float)temperature2/10);
+
+		itoa(pressure1,s_pres1,10);
+		strcat(s_pres1," Pa  ");
 		lcdPutS(s_pres1,lcdTextX(5), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
-*/
-		u_pres2 = BMP180_Read_PT(oos,I2C_PORT2);
-		rp = BMP180_Calc_RP(u_pres2,oos); // press
-		itoa(rp,s_pres2,10);
-		strcat(s_pres2," Pa");
+
+		itoa(pressure2+delta,s_pres2,10);
+		strcat(s_pres2," Pa  ");
 		lcdPutS(s_pres2, lcdTextX(5), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
+		format_3V(altitude, s_alt);
+		lcdPutS(s_alt, lcdTextX(5), lcdTextY(12), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
 		delay_us(200000);
 

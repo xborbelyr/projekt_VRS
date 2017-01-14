@@ -6,7 +6,7 @@
  */
 #include "stm32l1xx.h"
 #include "stm32l1xx_i2c.h"
- #include "stm32l1xx_rcc.h"
+#include "stm32l1xx_rcc.h"
 #include<stdlib.h>
 #include <stdio.h>
 
@@ -50,6 +50,7 @@
 #define BMP180_PARAM_MG                 3038
 #define BMP180_PARAM_MH                -7357
 #define BMP180_PARAM_MI                 3791
+#define PRINT_SIZE						20
 
 
 /* Calibration parameters structure */
@@ -70,8 +71,10 @@ typedef struct {
 
 
 /* Calibration parameters from E2PROM of BMP180 */
-BMP180_Calibration_TypeDef BMP180_Calibration;
+BMP180_Calibration_TypeDef BMP180_Calibration1, BMP180_Calibration2;
 
+uint32_t pressure1,pressure2,temperature1,temperature2;
+float delta,altitude;
 
 uint8_t BMP180_Init(uint32_t SPI_Clock_Speed);
 void BMP180_Reset(I2C_TypeDef * I2C_PORT);
@@ -79,13 +82,15 @@ void BMP180_Reset(I2C_TypeDef * I2C_PORT);
 uint8_t BMP180_WriteReg(uint8_t reg, uint8_t value, I2C_TypeDef * I2C_PORT);
 uint8_t BMP180_ReadReg(uint8_t reg,I2C_TypeDef * I2C_PORT);
 
-void BMP180_ReadCalibration(I2C_TypeDef * I2C_PORT);
+void BMP180_ReadCalibration(I2C_TypeDef * I2C_PORT,BMP180_Calibration_TypeDef * BMP180_Calibration);
 
 uint16_t BMP180_Read_UT(I2C_TypeDef * I2C_PORT);
 uint32_t BMP180_Read_PT(uint8_t oss, I2C_TypeDef * I2C_PORT);
-int16_t BMP180_Calc_RT(uint16_t UT);
-int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss);
+int16_t BMP180_Calc_RT(uint16_t UT,BMP180_Calibration_TypeDef * BMP180_Calibration);
+int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss,BMP180_Calibration_TypeDef * BMP180_Calibration);
 
-int32_t BMP180_kpa_to_mmhg(int32_t Pa);
+float calculateAltitude(int32_t presMove, int32_t presBase, float temp);
+void format_3V(float number, char *res);
+void readAveragePressure(uint8_t oss);
 
 #endif /* BMP180_H_ */

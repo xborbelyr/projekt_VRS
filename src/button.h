@@ -12,7 +12,7 @@
 
 #include "stm32l1xx.h"
 #include <stddef.h>
+#include "bmp180.h"
 
 void init_button(void);
-void init_NVIC(void);
 #endif /* BUTTON_H_ */

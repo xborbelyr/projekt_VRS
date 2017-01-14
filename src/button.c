@@ -8,11 +8,6 @@
 #include "button.h"
 
 
-void init_NVIC(void){
-
-
-	//ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC || ADC_FLAG_OVR);
-}
 void init_button(void){
 
 
@@ -63,8 +58,7 @@ void EXTI15_10_IRQHandler(void){
 
 	button= GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_13);
 	if(button==0){
-		//TODO
-
+		delta=pressure1-pressure2;
 	}
 	EXTI_ClearITPendingBit(EXTI_Line13);
 	}

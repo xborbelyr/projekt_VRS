@@ -126,7 +126,7 @@ uint8_t BMP180_ReadReg(uint8_t reg,I2C_TypeDef * I2C_PORT) {
 	return value;
 }
 
-void BMP180_ReadCalibration(I2C_TypeDef * I2C_PORT) {
+void BMP180_ReadCalibration(I2C_TypeDef * I2C_PORT, BMP180_Calibration_TypeDef * BMP180_Calibration) {
 	uint8_t i;
 	uint8_t buffer[BMP180_PROM_DATA_LEN];
 
@@ -150,17 +150,17 @@ void BMP180_ReadCalibration(I2C_TypeDef * I2C_PORT) {
 	while (!I2C_CheckEvent(I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
 	buffer[i] = I2C_ReceiveData(I2C_PORT); // Receive last byte
 
-	BMP180_Calibration.AC1 = (buffer[0]  << 8) | buffer[1];
-	BMP180_Calibration.AC2 = (buffer[2]  << 8) | buffer[3];
-	BMP180_Calibration.AC3 = (buffer[4]  << 8) | buffer[5];
-	BMP180_Calibration.AC4 = (buffer[6]  << 8) | buffer[7];
-	BMP180_Calibration.AC5 = (buffer[8]  << 8) | buffer[9];
-	BMP180_Calibration.AC6 = (buffer[10] << 8) | buffer[11];
-	BMP180_Calibration.B1  = (buffer[12] << 8) | buffer[13];
-	BMP180_Calibration.B2  = (buffer[14] << 8) | buffer[15];
-	BMP180_Calibration.MB  = (buffer[16] << 8) | buffer[17];
-	BMP180_Calibration.MC  = (buffer[18] << 8) | buffer[19];
-	BMP180_Calibration.MD  = (buffer[20] << 8) | buffer[21];
+	BMP180_Calibration->AC1 = (buffer[0]  << 8) | buffer[1];
+	BMP180_Calibration->AC2 = (buffer[2]  << 8) | buffer[3];
+	BMP180_Calibration->AC3 = (buffer[4]  << 8) | buffer[5];
+	BMP180_Calibration->AC4 = (buffer[6]  << 8) | buffer[7];
+	BMP180_Calibration->AC5 = (buffer[8]  << 8) | buffer[9];
+	BMP180_Calibration->AC6 = (buffer[10] << 8) | buffer[11];
+	BMP180_Calibration->B1  = (buffer[12] << 8) | buffer[13];
+	BMP180_Calibration->B2  = (buffer[14] << 8) | buffer[15];
+	BMP180_Calibration->MB  = (buffer[16] << 8) | buffer[17];
+	BMP180_Calibration->MC  = (buffer[18] << 8) | buffer[19];
+	BMP180_Calibration->MD  = (buffer[20] << 8) | buffer[21];
 }
 
 uint32_t BMP180_Read_PT(uint8_t oss, I2C_TypeDef * I2C_PORT) {
@@ -187,7 +187,7 @@ uint32_t BMP180_Read_PT(uint8_t oss, I2C_TypeDef * I2C_PORT) {
 	}
 
 	BMP180_WriteReg(BMP180_CTRL_MEAS_REG,cmd,I2C_PORT);
-	Delay(d);
+	delay_us(100*d+400);
 
 	I2C_AcknowledgeConfig(I2C_PORT,ENABLE); // Enable I2C acknowledge
 	I2C_GenerateSTART(I2C_PORT,ENABLE); // Send START condition
@@ -212,16 +212,50 @@ uint32_t BMP180_Read_PT(uint8_t oss, I2C_TypeDef * I2C_PORT) {
 	return PT >> (8 - oss);
 }
 
+uint16_t BMP180_Read_UT(I2C_TypeDef * I2C_PORT) {
+	uint16_t UT;
 
-int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss) {
+	BMP180_WriteReg(BMP180_CTRL_MEAS_REG,BMP180_T_MEASURE,I2C_PORT);
+	delay_us(100*10); // Wait for 4.5ms by datasheet
+
+
+	I2C_AcknowledgeConfig(I2C_PORT,ENABLE); // Enable I2C acknowledge
+	I2C_GenerateSTART(I2C_PORT,ENABLE); // Send START condition
+	while (!I2C_CheckEvent(I2C_PORT,I2C_EVENT_MASTER_MODE_SELECT)); // Wait for EV5
+	I2C_Send7bitAddress(I2C_PORT,BMP180_ADDR,I2C_Direction_Transmitter); // Send slave address
+	while (!I2C_CheckEvent(I2C_PORT,I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)); // Wait for EV6
+	I2C_SendData(I2C_PORT,BMP180_ADC_OUT_MSB_REG); // Send ADC MSB register address
+	while (!I2C_CheckEvent(I2C_PORT,I2C_EVENT_MASTER_BYTE_TRANSMITTED)); // Wait for EV8
+	I2C_GenerateSTART(I2C_PORT,ENABLE); // Send repeated START condition (aka Re-START)
+	while (!I2C_CheckEvent(I2C_PORT,I2C_EVENT_MASTER_MODE_SELECT)); // Wait for EV5
+	I2C_Send7bitAddress(I2C_PORT,BMP180_ADDR,I2C_Direction_Receiver); // Send slave address for READ
+	while (!I2C_CheckEvent(I2C_PORT,I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED)); // Wait for EV6
+	while (!I2C_CheckEvent(I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
+	UT = (uint16_t)I2C_ReceiveData(I2C_PORT) << 8; // Receive MSB
+	I2C_AcknowledgeConfig(I2C_PORT,DISABLE); // Disable I2C acknowledgment
+	I2C_GenerateSTOP(I2C_PORT,ENABLE); // Send STOP condition
+	while (!I2C_CheckEvent(I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
+	UT |= I2C_ReceiveData(I2C_PORT); // Receive LSB
+
+	return UT;
+}
+
+int16_t BMP180_Calc_RT(uint16_t UT,BMP180_Calibration_TypeDef * BMP180_Calibration) {
+	BMP180_Calibration->B5  = (((int32_t)UT - (int32_t)BMP180_Calibration->AC6) * (int32_t)BMP180_Calibration->AC5) >> 15;
+	BMP180_Calibration->B5 += ((int32_t)BMP180_Calibration->MC << 11) / (BMP180_Calibration->B5 + BMP180_Calibration->MD);
+
+	return (BMP180_Calibration->B5 + 8) >> 4;
+}
+
+int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss, BMP180_Calibration_TypeDef * BMP180_Calibration) {
 	int32_t B3,B6,X3,p;
 	uint32_t B4,B7;
 
-	B6 = BMP180_Calibration.B5 - 4000;
-	X3 = ((BMP180_Calibration.B2 * ((B6 * B6) >> 12)) >> 11) + ((BMP180_Calibration.AC2 * B6) >> 11);
-	B3 = (((((int32_t)BMP180_Calibration.AC1) * 4 + X3) << oss) + 2) >> 2;
-	X3 = (((BMP180_Calibration.AC3 * B6) >> 13) + ((BMP180_Calibration.B1 * ((B6 * B6) >> 12)) >> 16) + 2) >> 2;
-	B4 = (BMP180_Calibration.AC4 * (uint32_t)(X3 + 32768)) >> 15;
+	B6 = BMP180_Calibration->B5 - 4000;
+	X3 = ((BMP180_Calibration->B2 * ((B6 * B6) >> 12)) >> 11) + ((BMP180_Calibration->AC2 * B6) >> 11);
+	B3 = (((((int32_t)BMP180_Calibration->AC1) * 4 + X3) << oss) + 2) >> 2;
+	X3 = (((BMP180_Calibration->AC3 * B6) >> 13) + ((BMP180_Calibration->B1 * ((B6 * B6) >> 12)) >> 16) + 2) >> 2;
+	B4 = (BMP180_Calibration->AC4 * (uint32_t)(X3 + 32768)) >> 15;
 	B7 = ((uint32_t)UP - B3) * (50000 >> oss);
 	if (B7 < 0x80000000) p = (B7 << 1) / B4; else p = (B7 / B4) << 1;
 	p += ((((p >> 8) * (p >> 8) * BMP180_PARAM_MG) >> 16) + ((BMP180_PARAM_MH * p) >> 16) + BMP180_PARAM_MI) >> 4;
@@ -229,7 +263,41 @@ int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss) {
 	return p;
 }
 
-// Fast integer Pa -> mmHg conversion (Pascals to millimeters of mercury)
-int32_t BMP180_kpa_to_mmhg(int32_t Pa) {
-	return (Pa * 75) / 10000;
+void readAveragePressure(uint8_t oss){
+	uint32_t p1=0,p2=0,temp1=0,temp2=0,p_temp=0,t_temp=0;
+	int numberOfMes=3;
+	for(int i=0;i<numberOfMes;i++){
+		 t_temp = BMP180_Read_UT(I2C_PORT1);
+		 temp1 = BMP180_Calc_RT(t_temp,&BMP180_Calibration1);
+		 p_temp = BMP180_Read_PT(oss,I2C_PORT1);
+		 p1+= BMP180_Calc_RP(p_temp,oss,&BMP180_Calibration1);
+
+		 t_temp = BMP180_Read_UT(I2C_PORT2);
+		 temp2 = BMP180_Calc_RT(t_temp,&BMP180_Calibration2);
+		 p_temp = BMP180_Read_PT(oss,I2C_PORT2);
+		 p2+= BMP180_Calc_RP(p_temp,oss,&BMP180_Calibration2);
+	}
+	pressure1 = p1/numberOfMes;
+	pressure2 = p2/numberOfMes;
+	temperature1 = temp1/numberOfMes;
+	temperature2 = temp2/numberOfMes;
+}
+
+float calculateAltitude(int32_t presMove, int32_t presBase, float temp){
+
+	float altitude;
+	int32_t x1, x2;
+	x1 = presBase-presMove;
+	x2 = presMove+presBase;
+
+	altitude = 16000*(1+0.004*temp)*((float)x1/x2);
+	if(altitude>0) return altitude;
+	else return -altitude;
+}
+
+void format_3V(float number, char *res)
+{
+	int full=(int)number;
+	int decimal= (int) ((number-full)*1000);
+	sprintf(res,"%d.%d m  ",full,decimal);
 }
