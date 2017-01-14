@@ -9,6 +9,7 @@
 #include "stm32l1xx_rcc.h"
 #include<stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #ifndef BMP180_H_
 #define BMP180_H_

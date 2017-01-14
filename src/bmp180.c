@@ -265,7 +265,7 @@ int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss, BMP180_Calibration_TypeDef * BM
 
 void readAveragePressure(uint8_t oss){
 	uint32_t p1=0,p2=0,temp1=0,temp2=0,p_temp=0,t_temp=0;
-	int numberOfMes=3;
+	int numberOfMes=10;
 	for(int i=0;i<numberOfMes;i++){
 		 t_temp = BMP180_Read_UT(I2C_PORT1);
 		 temp1 = BMP180_Calc_RT(t_temp,&BMP180_Calibration1);
@@ -291,13 +291,15 @@ float calculateAltitude(int32_t presMove, int32_t presBase, float temp){
 	x2 = presMove+presBase;
 
 	altitude = 16000*(1+0.004*temp)*((float)x1/x2);
-	if(altitude>0) return altitude;
-	else return -altitude;
+	return altitude;
 }
 
 void format_3V(float number, char *res)
 {
 	int full=(int)number;
 	int decimal= (int) ((number-full)*1000);
-	sprintf(res,"%d.%d m  ",full,decimal);
+	if (full==0 && decimal<0)
+		sprintf(res,"-%d.%d m  ",full,abs(decimal));
+	else
+		sprintf(res,"%d.%d m  ",full,abs(decimal));
 }

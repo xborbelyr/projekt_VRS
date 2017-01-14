@@ -57,7 +57,7 @@ int main(void)
 		format_3V(altitude, s_alt);
 		lcdPutS(s_alt, lcdTextX(5), lcdTextY(12), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
-		delay_us(200000);
+		delay_us(100000);
 
     }
 
