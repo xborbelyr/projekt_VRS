@@ -16,7 +16,7 @@ int main(void)
 	char s_pres1[20],s_pres2[20];
 
 	BMP180_Init(400000);
-	//BMP180_ReadCalibration(I2C_PORT1);
+	BMP180_ReadCalibration(I2C_PORT1);
 	BMP180_ReadCalibration(I2C_PORT2);
 
 	initSPI2();
@@ -38,9 +38,9 @@ int main(void)
 
     while(1)
     {
-    	int oos=0;
+    	int oos=3;
 
-		/*u_pres1 = BMP180_Read_PT(oos,I2C_PORT1);
+		u_pres1 = BMP180_Read_PT(oos,I2C_PORT1);
 		rp = BMP180_Calc_RP(u_pres1,oos); // press
 		itoa(rp,s_pres1,10);
 		strcat(s_pres1," Pa");
