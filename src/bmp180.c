@@ -8,54 +8,88 @@
 
 #include "bmp180.h"
 
+
 	// Init I2C
 uint8_t BMP180_Init(uint32_t SPI_Clock_Speed) {
 	GPIO_InitTypeDef PORT;
-
+	I2C_InitTypeDef I2CInit;
 
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB,ENABLE);
-	PORT.GPIO_Pin = I2C_SCL_PIN;
+	PORT.GPIO_Pin = I2C_SCL_PIN1;
 	PORT.GPIO_OType = GPIO_OType_OD;
 	PORT.GPIO_PuPd = GPIO_PuPd_UP;//
 	PORT.GPIO_Mode = GPIO_Mode_AF;
 	PORT.GPIO_Speed = GPIO_Speed_40MHz;
 	GPIO_Init(GPIOB,&PORT);
 
-	PORT.GPIO_Pin = I2C_SDA_PIN;
+	PORT.GPIO_Pin = I2C_SDA_PIN1;
 	PORT.GPIO_OType = GPIO_OType_OD;
 	PORT.GPIO_PuPd = GPIO_PuPd_UP;
 	PORT.GPIO_Mode = GPIO_Mode_AF;
 	PORT.GPIO_Speed = GPIO_Speed_40MHz;
 	GPIO_Init(GPIOB,&PORT);
 
-	I2C_InitTypeDef I2CInit;
-	RCC_APB1PeriphClockCmd(I2C_CLOCK,ENABLE); // Enable I2C clock
+	RCC_APB1PeriphClockCmd(I2C_CLOCK1,ENABLE); // Enable I2C clock
 
 	  //choosing peripherals for selected pins
 	  GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_I2C1);//
 	  GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_I2C1);//
 
-
-	I2C_DeInit(I2C_PORT); // I2C reset to initial state
+	I2C_DeInit(I2C_PORT1); // I2C reset to initial state
 	I2CInit.I2C_Mode = I2C_Mode_I2C; // I2C mode is I2C
 	I2CInit.I2C_DutyCycle = I2C_DutyCycle_2; // I2C fast mode duty cycle (WTF is this?)
 	I2CInit.I2C_OwnAddress1 = 1; // This device address (7-bit or 10-bit)
 	I2CInit.I2C_Ack = I2C_Ack_Enable; // Acknowledgment enable
 	I2CInit.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit; // choose 7-bit address for acknowledgment
 	I2CInit.I2C_ClockSpeed = SPI_Clock_Speed;
-	I2C_Cmd(I2C_PORT,ENABLE); // Enable I2C
-	I2C_Init(I2C_PORT,&I2CInit); // Configure I2C
+	I2C_Cmd(I2C_PORT1,ENABLE); // Enable I2C
+	I2C_Init(I2C_PORT1,&I2CInit); // Configure I2C
 
-	while (I2C_GetFlagStatus(I2C_PORT,I2C_FLAG_BUSY)); // Wait until I2C free
+	while (I2C_GetFlagStatus(I2C_PORT1,I2C_FLAG_BUSY)); // Wait until I2C free
+
+
+
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB,ENABLE);
+		PORT.GPIO_Pin = I2C_SCL_PIN2;
+		PORT.GPIO_OType = GPIO_OType_OD;
+		PORT.GPIO_PuPd = GPIO_PuPd_UP;//
+		PORT.GPIO_Mode = GPIO_Mode_AF;
+		PORT.GPIO_Speed = GPIO_Speed_40MHz;
+		GPIO_Init(GPIOB,&PORT);
+
+		PORT.GPIO_Pin = I2C_SDA_PIN2;
+		PORT.GPIO_OType = GPIO_OType_OD;
+		PORT.GPIO_PuPd = GPIO_PuPd_UP;
+		PORT.GPIO_Mode = GPIO_Mode_AF;
+		PORT.GPIO_Speed = GPIO_Speed_40MHz;
+		GPIO_Init(GPIOB,&PORT);
+
+		RCC_APB1PeriphClockCmd(I2C_CLOCK2,ENABLE); // Enable I2C clock
+
+		  //choosing peripherals for selected pins
+		  GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_I2C2);//
+		  GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_I2C2);//
+
+		I2C_DeInit(I2C_PORT2); // I2C reset to initial state
+		I2CInit.I2C_Mode = I2C_Mode_I2C; // I2C mode is I2C
+		I2CInit.I2C_DutyCycle = I2C_DutyCycle_2; // I2C fast mode duty cycle (WTF is this?)
+		I2CInit.I2C_OwnAddress1 = 1; // This device address (7-bit or 10-bit)
+		I2CInit.I2C_Ack = I2C_Ack_Enable; // Acknowledgment enable
+		I2CInit.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit; // choose 7-bit address for acknowledgment
+		I2CInit.I2C_ClockSpeed = SPI_Clock_Speed;
+		I2C_Cmd(I2C_PORT2,ENABLE); // Enable I2C
+		I2C_Init(I2C_PORT2,&I2CInit); // Configure I2C
+
+		while (I2C_GetFlagStatus(I2C_PORT2,I2C_FLAG_BUSY)); // Wait until I2C free
 
 	return 0;
 }
 
-void BMP180_Reset() {
-	BMP180_WriteReg(BMP180_SOFT_RESET_REG,0xb6); // Do software reset
+void BMP180_Reset(I2C_TypeDef * I2C_PORT) {
+	BMP180_WriteReg(BMP180_SOFT_RESET_REG,0xb6,I2C_PORT); // Do software reset
 }
 
-uint8_t BMP180_WriteReg(uint8_t reg, uint8_t value) {
+uint8_t BMP180_WriteReg(uint8_t reg, uint8_t value, I2C_TypeDef * I2C_PORT) {
 	I2C_GenerateSTART(I2C_PORT,ENABLE);
 	while (!I2C_CheckEvent(I2C_PORT,I2C_EVENT_MASTER_MODE_SELECT)); // Wait for EV5
 	I2C_Send7bitAddress(I2C_PORT,BMP180_ADDR,I2C_Direction_Transmitter); // Send slave address
@@ -69,7 +103,8 @@ uint8_t BMP180_WriteReg(uint8_t reg, uint8_t value) {
 	return value;
 }
 
-uint8_t BMP180_ReadReg(uint8_t reg) {
+uint8_t BMP180_ReadReg(uint8_t reg,I2C_TypeDef * I2C_PORT) {
+
 	uint8_t value;
 
 	I2C_GenerateSTART(I2C_PORT,ENABLE);
@@ -91,7 +126,7 @@ uint8_t BMP180_ReadReg(uint8_t reg) {
 	return value;
 }
 
-void BMP180_ReadCalibration(void) {
+void BMP180_ReadCalibration(I2C_TypeDef * I2C_PORT) {
 	uint8_t i;
 	uint8_t buffer[BMP180_PROM_DATA_LEN];
 
@@ -128,7 +163,7 @@ void BMP180_ReadCalibration(void) {
 	BMP180_Calibration.MD  = (buffer[20] << 8) | buffer[21];
 }
 
-uint32_t BMP180_Read_PT(uint8_t oss) {
+uint32_t BMP180_Read_PT(uint8_t oss, I2C_TypeDef * I2C_PORT) {
 	uint32_t PT;
 	uint8_t cmd,d;
 
@@ -151,11 +186,8 @@ uint32_t BMP180_Read_PT(uint8_t oss) {
 		break;
 	}
 
-	BMP180_WriteReg(BMP180_CTRL_MEAS_REG,cmd);
-	int i;
-	for(i =0 ;i<d;i++){
-
-	}
+	BMP180_WriteReg(BMP180_CTRL_MEAS_REG,cmd,I2C_PORT);
+	Delay(d);
 
 	I2C_AcknowledgeConfig(I2C_PORT,ENABLE); // Enable I2C acknowledge
 	I2C_GenerateSTART(I2C_PORT,ENABLE); // Send START condition

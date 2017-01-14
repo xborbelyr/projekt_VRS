@@ -14,27 +14,19 @@
 #define BMP180_H_
 
 /* I2C to use for communications with BMP180 */
-#define _I2C_PORT 1
 
-#if _I2C_PORT == 1
-	#define I2C_PORT         I2C1
-	#define I2C_SCL_PIN      GPIO_Pin_8     // PB8
-	#define I2C_SDA_PIN      GPIO_Pin_9     // PB9
-	#define I2C_GPIO_PORT    GPIOB
-	#define I2C_CLOCK        RCC_APB1Periph_I2C1
-#elif _I2C_PORT == 2
-	#define I2C_PORT         I2C2
-	#define I2C_SCL_PIN      GPIO_Pin_10    // PB10
-	#define I2C_SDA_PIN      GPIO_Pin_11    // PB11
-	#define I2C_GPIO_PORT    GPIOB
-	#define I2C_CLOCK        RCC_APB1Periph_I2C2
-#elif _I2C_PORT == 3
-	#define I2C_PORT         I2C3
-	#define I2C_SCL_PIN      GPIO_Pin_8    // PA8
-	#define I2C_SDA_PIN      GPIO_Pin_9    // PC9
-	//#define I2C_GPIO_PORT    GPIOB
-	#define I2C_CLOCK        RCC_APB1Periph_I2C3
-#endif
+
+	#define I2C_PORT1         I2C1
+	#define I2C_SCL_PIN1      GPIO_Pin_8     // PB8
+	#define I2C_SDA_PIN1      GPIO_Pin_9     // PB9
+	#define I2C_GPIO_PORT     GPIOB
+	#define I2C_CLOCK1        RCC_APB1Periph_I2C1
+
+	#define I2C_PORT2         I2C2
+	#define I2C_SCL_PIN2      GPIO_Pin_10    // PB10
+	#define I2C_SDA_PIN2      GPIO_Pin_11    // PB11
+	#define I2C_CLOCK2        RCC_APB1Periph_I2C2
+
 
 /* BMP180 defines */
 #define BMP180_ADDR                     0xEE // BMP180 address
@@ -82,15 +74,15 @@ BMP180_Calibration_TypeDef BMP180_Calibration;
 
 
 uint8_t BMP180_Init(uint32_t SPI_Clock_Speed);
-void BMP180_Reset();
+void BMP180_Reset(I2C_TypeDef * I2C_PORT);
 
-uint8_t BMP180_WriteReg(uint8_t reg, uint8_t value);
-uint8_t BMP180_ReadReg(uint8_t reg);
+uint8_t BMP180_WriteReg(uint8_t reg, uint8_t value, I2C_TypeDef * I2C_PORT);
+uint8_t BMP180_ReadReg(uint8_t reg,I2C_TypeDef * I2C_PORT);
 
-void BMP180_ReadCalibration(void);
+void BMP180_ReadCalibration(I2C_TypeDef * I2C_PORT);
 
-uint16_t BMP180_Read_UT(void);
-uint32_t BMP180_Read_PT(uint8_t oss);
+uint16_t BMP180_Read_UT(I2C_TypeDef * I2C_PORT);
+uint32_t BMP180_Read_PT(uint8_t oss, I2C_TypeDef * I2C_PORT);
 int16_t BMP180_Calc_RT(uint16_t UT);
 int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss);
 
