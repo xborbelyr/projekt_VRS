@@ -25,7 +25,7 @@ void init_button(void);
 /*
  * Function:  init_button 
  * --------------------
- *  Interrupt handler pre tlacidlo
+ *  Handler pre prerusenie tlacidla (Pri preruseni sa vypocita rozdiel tlakov)
  *    
  */ 
  void EXTI15_10_IRQHandler(void);
