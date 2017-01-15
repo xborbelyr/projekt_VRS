@@ -35,7 +35,7 @@ int main(void)
 
     	readAveragePressure(oss);
 
-    	altitude = calculateAltitude1(pressure1, pressure2+delta, temperature2);
+    	altitude = calculateAltitude(pressure1, pressure2+delta, temperature2);
 
 		itoa(pressure1,s_pres1,10);
 		strcat(s_pres1," Pa  ");
