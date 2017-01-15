@@ -74,7 +74,7 @@ typedef struct {
 /* Calibration parameters from E2PROM of BMP180 */
 BMP180_Calibration_TypeDef BMP180_Calibration1, BMP180_Calibration2;
 
-uint32_t pressure1,pressure2,temperature1,temperature2;
+float pressure1,pressure2,temperature1,temperature2;
 float delta,altitude;
 
 uint8_t BMP180_Init(uint32_t SPI_Clock_Speed);
@@ -90,8 +90,8 @@ uint32_t BMP180_Read_PT(uint8_t oss, I2C_TypeDef * I2C_PORT);
 int16_t BMP180_Calc_RT(uint16_t UT,BMP180_Calibration_TypeDef * BMP180_Calibration);
 int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss,BMP180_Calibration_TypeDef * BMP180_Calibration);
 
-float calculateAltitude(int32_t presMove, int32_t presBase, float temp);
-void format_3V(float number, char *res);
+float calculateAltitude(float presMove, float presBase, float temp);
+void float2string(float number, char *res);
 void readAveragePressure(uint8_t oss);
 
 #endif /* BMP180_H_ */

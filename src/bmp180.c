@@ -277,29 +277,34 @@ void readAveragePressure(uint8_t oss){
 		 p_temp = BMP180_Read_PT(oss,I2C_PORT2);
 		 p2+= BMP180_Calc_RP(p_temp,oss,&BMP180_Calibration2);
 	}
-	pressure1 = p1/numberOfMes;
-	pressure2 = p2/numberOfMes;
-	temperature1 = temp1/numberOfMes;
-	temperature2 = temp2/numberOfMes;
+	pressure1 = (float)p1/numberOfMes;
+	pressure2 = (float)p2/numberOfMes;
+	temperature1 = (float)temp1/numberOfMes;
+	temperature2 = (float)temp2/numberOfMes;
 }
 
-float calculateAltitude(int32_t presMove, int32_t presBase, float temp){
+float calculateAltitude(float presMove, float presBase, float temp){
 
-	float altitude;
-	int32_t x1, x2;
+	float altitude, x1, x2;
 	x1 = presBase-presMove;
 	x2 = presMove+presBase;
 
-	altitude = 16000*(1+0.004*temp)*((float)x1/x2);
+	altitude = 16000*(1+0.004*temp)*(x1/x2);
 	return altitude;
 }
 
-void format_3V(float number, char *res)
+void float2string(float number, char *res)
 {
+	char padding[2]={0};
 	int full=(int)number;
-	int decimal= (int) ((number-full)*1000);
-	if (full==0 && decimal<0)
-		sprintf(res,"-%d.%d m  ",full,abs(decimal));
+	int decimal= (int) ((number-full)*100);
+	sprintf(padding,"%d",abs(decimal));
+	if(abs(decimal)<10)
+		sprintf(padding,"0%d m  ",abs(decimal));
 	else
-		sprintf(res,"%d.%d m  ",full,abs(decimal));
+		sprintf(padding,"%d m  ",abs(decimal));
+	if (full==0 && decimal<0)
+		sprintf(res,"-%d.%s",full,padding);
+	else
+		sprintf(res,"%d.%s",full,padding);
 }

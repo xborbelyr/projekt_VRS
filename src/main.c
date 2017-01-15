@@ -3,7 +3,6 @@
 #include "stm32l1xx.h"
 
 #include "mcu/spi.h"
-#include "ssd1306.h"
 #include "ili9163.h"
 #include "button.h"
 
@@ -25,16 +24,7 @@ int main(void)
 	initCS_Pin();
 	initRES_Pin();
 
-	lcdInitialise(LCD_ORIENTATION0);
-
-	lcdClearDisplay(decodeRgbValue(0, 0, 0));
-
-	lcdPutS("PRESSURE 1", lcdTextX(2), lcdTextY(2), decodeRgbValue(0, 0, 0), decodeRgbValue(255,255,255));
-
-	lcdPutS("PRESSURE 2", lcdTextX(2), lcdTextY(6), decodeRgbValue(0, 0, 0), decodeRgbValue(255, 255, 255));
-
-	lcdPutS("HEIGHT", lcdTextX(2), lcdTextY(10), decodeRgbValue(0, 0, 0), decodeRgbValue(255, 255, 255));
-
+	initLCDtext();
 
 	delta = 0;
 
@@ -44,7 +34,7 @@ int main(void)
 
     	readAveragePressure(oss);
 
-    	altitude = calculateAltitude(pressure1, pressure2+delta, (float)temperature2/10);
+    	altitude = calculateAltitude(pressure1, pressure2+delta, temperature2);
 
 		itoa(pressure1,s_pres1,10);
 		strcat(s_pres1," Pa  ");
@@ -54,7 +44,7 @@ int main(void)
 		strcat(s_pres2," Pa  ");
 		lcdPutS(s_pres2, lcdTextX(5), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
-		format_3V(altitude, s_alt);
+		float2string(altitude, s_alt);
 		lcdPutS(s_alt, lcdTextX(5), lcdTextY(12), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
 		delay_us(100000);

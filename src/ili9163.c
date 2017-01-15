@@ -29,11 +29,19 @@
 #include "ili9163.h"
 #include "font5x8.h"
 #include "mcu/spi.h"
-#include "ssd1306.h"
 
 // Low-level LCD driving functions --------------------------------------------------------------------------
 
 // Reset the LCD hardware
+void Delay(uint16_t n)
+{
+	uint32_t nl = n*2;
+	while(nl--);
+
+
+	return;
+}
+
 void lcdReset(void)
 {
 	// Reset pin is active low (0 = reset, 1 = ready)
@@ -413,4 +421,12 @@ void lcdPutS(const char *string, uint8_t x, uint8_t y, uint16_t fgColour, uint16
 		lcdPutCh(string[characterNumber], x, y, fgColour, bgColour);
 		x += 6;
 	}
+}
+
+void initLCDtext(){
+	lcdInitialise(LCD_ORIENTATION0);
+	lcdClearDisplay(decodeRgbValue(0, 0, 0));
+	lcdPutS("PRESSURE 1", lcdTextX(2), lcdTextY(2), decodeRgbValue(0, 0, 0), decodeRgbValue(255,255,255));
+	lcdPutS("PRESSURE 2", lcdTextX(2), lcdTextY(6), decodeRgbValue(0, 0, 0), decodeRgbValue(255, 255, 255));
+	lcdPutS("HEIGHT", lcdTextX(2), lcdTextY(10), decodeRgbValue(0, 0, 0), decodeRgbValue(255, 255, 255));
 }
