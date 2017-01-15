@@ -158,12 +158,28 @@ int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss,BMP180_Calibration_TypeDef * BMP
 float calculateAltitude(float presMove, float presBase, float temp);
 
 /*
+ * Function:  calculateAltitude2
+ * --------------------
+ *  Alternativny vypocet vyskoveho rozdielu z dvoch tlakov
+ *
+ */
+float calculateAltitude2(float presMove, float presBase, float temp);
+
+/*
+ * Function:  calculateAltitude3
+ * --------------------
+ *  Aplikacia zavislosti vysky od zmeny tlaku (3Pa ~ 25cm)
+ *
+ */
+float calculateAltitude3(float presMove, float presBase, float temp);
+
+/*
  * Function:  float2String 
  * --------------------
  *  Prepocet float premennej na string (kvoli vypisovaniu na displej)
  *    
  */
-void float2String(float number, char *res);
+void float2String(float* number, char *res);
 
 /*
  * Function:  readAveragePressure 

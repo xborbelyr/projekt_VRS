@@ -27,6 +27,7 @@ int main(void)
 	initLCDtext();
 
 	delta = 0;
+	altitude = 0;
 
     while(1)
     {
@@ -34,7 +35,7 @@ int main(void)
 
     	readAveragePressure(oss);
 
-    	altitude = calculateAltitude(pressure1, pressure2+delta, temperature2);
+    	altitude = calculateAltitude1(pressure1, pressure2+delta, temperature2);
 
 		itoa(pressure1,s_pres1,10);
 		strcat(s_pres1," Pa  ");
@@ -44,7 +45,7 @@ int main(void)
 		strcat(s_pres2," Pa  ");
 		lcdPutS(s_pres2, lcdTextX(5), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
-		float2string(altitude, s_alt);
+		float2string(&altitude, s_alt);
 		lcdPutS(s_alt, lcdTextX(5), lcdTextY(12), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
 		delay_us(100000);

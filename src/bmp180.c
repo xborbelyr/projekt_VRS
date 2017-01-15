@@ -285,19 +285,43 @@ void readAveragePressure(uint8_t oss){
 
 float calculateAltitude(float presMove, float presBase, float temp){
 
-	float altitude, x1, x2;
+	float alt, x1, x2;
 	x1 = presBase-presMove;
 	x2 = presMove+presBase;
 
-	altitude = 16000*(1+0.004*temp)*(x1/x2);
-	return altitude;
+	alt = 16000*(1+0.004*temp)*(x1/x2);
+	return alt;
 }
 
-void float2string(float number, char *res)
+float calculateAltitude2(float presMove, float presBase, float temp){
+
+	float alt, x1, x2;
+	int barSuc = 18464;
+	float koefRozVzduchu = 0.00366;
+
+	x1 = presBase-presMove;
+	x2 = presMove+presBase;
+
+	alt = barSuc * log10(presBase/presMove)*(1+koefRozVzduchu*temp);
+	return alt;
+}
+
+float calculateAltitude3(float presMove, float presBase, float temp){
+
+	float alt, x1, x2;
+
+	x1=presBase - presMove;
+	x2=x1/3;
+	alt=x2*0.25;
+
+	return alt;
+}
+
+void float2string(float* number, char *res)
 {
 	char padding[2]={0};
-	int full=(int)number;
-	int decimal= (int) ((number-full)*100);
+	int full=(int)*number;
+	int decimal= (int) ((*number-full)*100);
 	sprintf(padding,"%d",abs(decimal));
 	if(abs(decimal)<10)
 		sprintf(padding,"0%d m  ",abs(decimal));
