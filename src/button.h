@@ -14,5 +14,19 @@
 #include <stddef.h>
 #include "bmp180.h"
 
+/*
+ * Function:  init_button 
+ * --------------------
+ *  Inicializacia tlacidla (GPIO periferia, externe prerusenie na tlacidlo)
+ *    
+ */
 void init_button(void);
+
+/*
+ * Function:  init_button 
+ * --------------------
+ *  Handler pre prerusenie tlacidla (Pri preruseni sa vypocita rozdiel tlakov)
+ *    
+ */ 
+ void EXTI15_10_IRQHandler(void);
 #endif /* BUTTON_H_ */

@@ -14,20 +14,51 @@
 #ifndef __SPI_H
 #define __SPI_H
 
-
+/*
+ * Function:  initSPI2 
+ * --------------------
+ * Inicializacia SPI zbernice
+ *    
+ */
 void initSPI2(void);
+
+/*
+ * Function:  readWriteSPI2 
+ * --------------------
+ *  Citanie a zapisovanie zo zbernice SPI
+ *    
+ */
 unsigned char readWriteSPI2(unsigned char txData);
 
 //Example of CS use
+
+/*
+ * Function:  initCS_Pin 
+ * --------------------
+ * Inicializacia chip select pinu
+ *    
+ */
 void initCS_Pin(void);
+
 void device_Select(void);
+
 void device_Unselect(void);
 
 void initCD_Pin(void);
+
 void cd_set(void);
+
 void cd_reset(void);
 
+/*
+ * Function:  res_set 
+ * --------------------
+ * Inicializacia restat pinu (PA9)
+ *    
+ */
 void initRES_Pin(void);
+
 void res_set(void);
+
 void res_reset(void);
 #endif

@@ -77,21 +77,100 @@ BMP180_Calibration_TypeDef BMP180_Calibration1, BMP180_Calibration2;
 float pressure1,pressure2,temperature1,temperature2;
 float delta,altitude;
 
+/*
+ * Function:  BMP180_Init 
+ * --------------------
+ * Pouziva sa na inicializaciu BMP senzora(inicializacia GPIO periferie a I2C zbernice)
+ *    
+ */
 uint8_t BMP180_Init(uint32_t SPI_Clock_Speed);
+
+/*
+ * Function:  BMP180_Reset 
+ * --------------------
+ *  Vykonanie softveroveho resetu
+ *    
+ */
 void BMP180_Reset(I2C_TypeDef * I2C_PORT);
 
+/*
+ * Function:  BMP180_WriteReg 
+ * --------------------
+ *  Zapis na I2C zbernicu
+ *    
+ */
 uint8_t BMP180_WriteReg(uint8_t reg, uint8_t value, I2C_TypeDef * I2C_PORT);
+
+/*
+ * Function:  BMP180_ReadReg 
+ * --------------------
+ *  Citanie z I2C zbernice
+ *    
+ */
 uint8_t BMP180_ReadReg(uint8_t reg,I2C_TypeDef * I2C_PORT);
 
+/*
+ * Function:  BMP180_ReadCalibration 
+ * --------------------
+ *  Pouziva sa na kalibraciu raw udajov zo senzora
+ *    
+ */
 void BMP180_ReadCalibration(I2C_TypeDef * I2C_PORT,BMP180_Calibration_TypeDef * BMP180_Calibration);
 
+/*
+ * Function:  BMP180_Read_UT 
+ * --------------------
+ *  Vycitavanie raw teploty
+ *    
+ */
 uint16_t BMP180_Read_UT(I2C_TypeDef * I2C_PORT);
+
+/*
+ * Function:  BMP180_Read_PT 
+ * --------------------
+ *  Vycitavanie raw tlaku
+ *    
+ */
 uint32_t BMP180_Read_PT(uint8_t oss, I2C_TypeDef * I2C_PORT);
+
+/*
+ * Function:  BMP180_Calc_RT 
+ * --------------------
+ *  Prepocet na skutocnu teplotu z raw dat
+ *    
+ */
 int16_t BMP180_Calc_RT(uint16_t UT,BMP180_Calibration_TypeDef * BMP180_Calibration);
+
+/*
+ * Function:  BMP180_Calc_RP 
+ * --------------------
+ *  Prepocet na skutocny tlak z raw dat
+ *    
+ */
 int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss,BMP180_Calibration_TypeDef * BMP180_Calibration);
 
+/*
+ * Function:  calculateAltitude
+ * --------------------
+ *  Vypocet vyskoveho rozdielu z dvoch tlakov
+ *    
+ */
 float calculateAltitude(float presMove, float presBase, float temp);
-void float2string(float number, char *res);
+
+/*
+ * Function:  float2String 
+ * --------------------
+ *  Prepocet float premennej na string (kvoli vypisovaniu na displej)
+ *    
+ */
+void float2String(float number, char *res);
+
+/*
+ * Function:  readAveragePressure 
+ * --------------------
+ *  Vycitavanie tlaku a nasledne spriemerovanie desiatich vzoriek
+ *    
+ */
 void readAveragePressure(uint8_t oss);
 
 #endif /* BMP180_H_ */
